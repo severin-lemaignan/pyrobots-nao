@@ -1,0 +1,49 @@
+#! /usr/bin/env python
+
+import logging
+import time
+
+from robots.concurrency import action
+from robots.resources import lock
+
+from robots.naoqi import Nao
+from robots.naoqi.res import EYES
+
+logger = logging.getLogger("nao.scenario")
+
+
+@lock(EYES)
+@action
+def on_touch_head(robot):
+    logger.info("Head touched!")
+
+    blinking = robot.blink()
+
+    robot.sleep(1)
+    if robot.state["asleep"]:
+        robot.wakeup().wait()
+        robot.state["asleep"] = False
+    else:
+        robot.fall_asleep().wait()
+        robot.state["asleep"] = True
+
+    blinking.cancel()
+
+with Nao() as robot:
+
+    # Turn on DEBUG logging
+    robot.debug()
+
+    robot.state["asleep"] = True
+
+    logger.info("Ok! Let's start!")
+    robot.whenever("head_touched", becomes=True).do(on_touch_head)
+
+    try:
+        while not robot.rosactions.is_shutdown():
+            time.sleep(0.5)
+
+    except KeyboardInterrupt:
+        pass
+
+    logger.info("Byebye")
