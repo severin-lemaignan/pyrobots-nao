@@ -6,4 +6,5 @@ REYE = Resource("right eye")
 EYES = CompoundResource(LEYE, REYE, name = "eyes")
 AUDIO = Resource("audio")
 
+HEAD = Resource("head")
 
