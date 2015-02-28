@@ -1,5 +1,4 @@
-import naoqi
-
+import naoqi as alnaoqi
 from robots.mw import ROS
 from robots import GenericRobot
 
@@ -15,5 +14,5 @@ class Nao(GenericRobot):
                  dummy=False,
                  immediate=immediate)
 
-        self.motion = naoqi.ALProxy("ALMotion", nao_ip, nao_port)
+        self.motion = alnaoqi.ALProxy("ALMotion", nao_ip, nao_port)
 
