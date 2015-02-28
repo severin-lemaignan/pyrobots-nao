@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging; logger = logging.getLogger("nao.look")
 import time
 import math
@@ -6,13 +8,16 @@ from robots.concurrency import action, ActionCancelled
 from robots.resources import lock
 from robots.naoqi.res import *
 
+def clamp(v, vmin, vmax):
+    return max(vmin, min(vmax, v))
+    
 @action
 @lock(HEAD)
 def lookat(robot, pose):
     place_eyes_towards(robot, pose)
 
 def place_eyes_towards(robot, pose):
-    pan, tilt = robot.pose.pantilt(pose, "eyes_link")
+    pan, tilt = robot.poses.pantilt(pose, "CameraTop_frame")
     if pan < -math.pi/2 or pan > math.pi/2:
         #out of field of view!
         #TODO: turn the robot? -> maybe yes if the WHEELS are not locked?
@@ -27,14 +32,26 @@ def place_eyes_towards(robot, pose):
     # Example showing how to set angles, using a fraction of max speed
     names  = ["HeadYaw", "HeadPitch"]
     angles  = [pan, tilt]
+
     fractionMaxSpeed  = 0.2
-    robot.motion.setAngles(names, angles, fractionMaxSpeed)
+    
+    # get angles    
+    #useSensors = False 
+    #angles = robot.motion.getAngles(names, useSensors)    
+
+    # convert
+    angles[0] = angles[0] 
+    angles[1] = angles[1] 
+       
+    # Interpolate with speed
+    robot.motion.angleInterpolationWithSpeed(names, angles, fractionMaxSpeed)  
+       
+    #robot.motion.setAngles(names, angles, fractionMaxSpeed)
 
     robot.sleep(3.0)
 
     robot.motion.setStiffnesses("Head", 0.0)
-
-
+     
 
 @action
 @lock(HEAD)
